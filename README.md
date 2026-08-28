@@ -244,6 +244,28 @@ HTTP responses:
 
 ## AI Assistance Disclosure
 
-AI tools were used selectively during development for technical guidance, debugging, and clarification of certain implementation and testing concepts.
+AI tools were used selectively during development for technical guidance, debugging, and clarification of implementation and testing concepts.
 
-The final code and project decisions were reviewed, adapted, and tested as part of the development process.
+AI assistance was used selectively for technical guidance and to clarify specific implementation details, including Spring Boot REST API design, validation, exception handling, JPA repository usage, status transition logic, and testing approaches. 
+The suggestions were reviewed against the assignment requirements, and the final implementation, business rules, and design decisions were independently evaluated and tested.
+
+The suggested solutions were reviewed and adapted to fit the requirements of this assignment. I made the final implementation decisions and corrected or adjusted suggestions where necessary.
+
+The application was verified by running the complete Maven test suite and manually testing the REST APIs using Postman. The final test run completed successfully with all tests passing.
+
+
+
+## Known Limitations
+
+- The application uses an in-memory H2 database, so data is lost when the application stops.
+- Authentication and authorization are not implemented because they are outside the assignment scope.
+- Pagination is not implemented for customer transaction retrieval.
+
+
+## What I Would Improve With More Time
+
+- Add more integration tests for the REST APIs.
+- Add API documentation using OpenAPI/Swagger.
+- Add authentication and authorization.
+- Add structured logging and monitoring.
+- For production deployment, consider using a persistent database such as MySQL instead of the current in-memory H2 database.
