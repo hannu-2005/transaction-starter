@@ -179,36 +179,43 @@ The tests should cover more than just application startup.
 
 The test suite covers transaction creation, retrieval, status updates, customer transaction retrieval, and business-rule validation.
 
+
 ## Implementation Details
+
+### Project Structure
+
+The application follows a simple layered architecture to keep responsibilities separated:
+
+* **Controller** – Handles HTTP requests and responses.
+* **Service** – Contains transaction business logic and validation rules.
+* **Repository** – Handles persistence using Spring Data JPA.
+* **Entity/Model** – Represents transaction data.
+* **Exception Handling** – Handles expected application errors and returns appropriate HTTP responses.
 
 ### Validation Rules
 
-The following validation rules are implemented:
+The following validation rules are applied:
 
 * Transaction ID is required and must be unique.
 * Customer ID is required and cannot be blank.
 * Amount is required and must be greater than 0.
-* Currency is required and must be a 3-letter uppercase code such as INR, USD, or EUR.
+* Currency is required and must be a valid 3-letter uppercase currency code.
 * Transaction type is required.
-* Supported transaction types are:
+* Supported transaction types are `PAYMENT`, `REFUND`, and `TRANSFER`.
+* A newly created transaction must have `PENDING` status.
 
-  * PAYMENT
-  * REFUND
-  * TRANSFER
-* A newly created transaction must have the initial status `PENDING`.
-
-### Business Validation
-
-In addition to the validation annotations, the following business rules are applied:
+### Business Rules
 
 * Duplicate transaction IDs are rejected.
 * New transactions must start with `PENDING` status.
-* Only PAYMENT, REFUND, and TRANSFER transaction types are accepted.
-* Invalid status transitions are rejected.
+* Only supported transaction types are accepted.
+* Transaction status changes are restricted to valid transitions.
+* `COMPLETED` and `FAILED` are terminal statuses.
+* Submitting the current status again is allowed.
 
-## Status Transition Rules
+### Status Transition Rules
 
-The transaction status follows this lifecycle:
+The transaction lifecycle is:
 
 ```text
 PENDING → PROCESSING
@@ -217,55 +224,65 @@ PROCESSING → COMPLETED
 PROCESSING → FAILED
 ```
 
-`COMPLETED` and `FAILED` are terminal statuses and cannot be changed to another status.
+Transitions outside this flow are rejected as invalid business requests.
 
-Submitting the same status again is allowed.
+### Error Handling
 
-## Implemented API Endpoints
-
-* POST `/api/transactions` - Create transaction
-* GET `/api/transactions/{transactionId}` - Get transaction
-* PATCH `/api/transactions/{transactionId}/status` - Update transaction status
-* GET `/api/transactions/customer/{customerId}` - Get all transactions for a customer
-
-## Error Handling
-
-The application provides centralized error handling for:
+The application handles the following cases:
 
 * Transaction not found
-* Invalid status transitions
-* Validation errors
-* Duplicate transaction IDs
+* Duplicate transaction ID
+* Invalid input
+* Invalid transaction status transition
 
-HTTP responses:
+The API returns:
 
-* `404 NOT FOUND` - Transaction not found
-* `400 BAD REQUEST` - Validation or business-rule error
+* `400 BAD REQUEST` for validation and business-rule failures.
+* `404 NOT FOUND` when the requested transaction does not exist.
 
-## AI Assistance Disclosure
+### Testing
 
-AI tools were used selectively during development for technical guidance, debugging, and clarification of implementation and testing concepts.
+Automated tests are included for the main transaction operations and business rules.
 
-AI assistance was used selectively for technical guidance and to clarify specific implementation details, including Spring Boot REST API design, validation, exception handling, JPA repository usage, status transition logic, and testing approaches. 
-The suggestions were reviewed against the assignment requirements, and the final implementation, business rules, and design decisions were independently evaluated and tested.
+The test suite covers:
 
-The suggested solutions were reviewed and adapted to fit the requirements of this assignment. I made the final implementation decisions and corrected or adjusted suggestions where necessary.
+* Successful transaction creation
+* Validation failure
+* Duplicate transaction ID
+* Transaction not found
+* Transaction retrieval
+* Status update
+* Customer transaction retrieval
+* Invalid status transition
 
-The application was verified by running the complete Maven test suite and manually testing the REST APIs using Postman. The final test run completed successfully with all tests passing.
+The complete test suite is executed using:
 
+```bat
+mvnw.cmd clean test
+```
 
+REST APIs were also manually verified using Postman.
+
+## AI Usage Disclosure
+
+AI assistance was used during development for technical guidance, debugging, and clarification of Spring Boot, validation, JPA, exception handling, and testing concepts.
+
+The generated suggestions were reviewed against the assignment requirements rather than being used without verification. Implementation decisions were made based on the project requirements, and changes were tested after implementation.
+
+The final application was verified by running the Maven test suite and manually testing the REST endpoints using Postman.
 
 ## Known Limitations
 
-- The application uses an in-memory H2 database, so data is lost when the application stops.
-- Authentication and authorization are not implemented because they are outside the assignment scope.
-- Pagination is not implemented for customer transaction retrieval.
-
+* The application uses the H2 database provided by the starter project. As an in-memory database, transaction data is not retained after the application is stopped.
+* Authentication and authorization are not implemented because they are outside the scope of the assignment.
+* Pagination is not implemented for customer transaction retrieval.
 
 ## What I Would Improve With More Time
 
-- Add more integration tests for the REST APIs.
-- Add API documentation using OpenAPI/Swagger.
-- Add authentication and authorization.
-- Add structured logging and monitoring.
-- For production deployment, consider using a persistent database such as MySQL instead of the current in-memory H2 database.
+* Add more REST-level integration tests.
+* Add API documentation using OpenAPI/Swagger.
+* Improve structured logging and monitoring.
+* Add pagination for customer transaction retrieval.
+* Introduce a persistent database configuration for a production deployment.
+
+
